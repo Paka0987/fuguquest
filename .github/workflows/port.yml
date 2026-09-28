@@ -17,8 +17,9 @@ jobs:
           pip3 install vmlinux-to-elf
           PDGO_URL=$(curl -s https://api.github.com/repos/ssut/payload-dumper-go/releases/latest | jq -r '[.assets[] | select(.name | (test("linux_amd64.*\\.tar\\.gz") and (contains("avx2") | not)))] | first | .browser_download_url')
           echo "Downloading: $PDGO_URL"
-          curl -L "$PDGO_URL" | tar xz -C /tmp
-          find /tmp -name 'payload-dumper-go' -exec mv {} /usr/local/bin/ \;
+          mkdir -p /tmp/pdgo
+          curl -L "$PDGO_URL" | tar xz -C /tmp/pdgo
+          mv /tmp/pdgo/payload-dumper-go /usr/local/bin/payload-dumper-go
           chmod +x /usr/local/bin/payload-dumper-go
       - name: download OTA
         run: curl -L "${{ github.event.inputs.ota_url }}" -o ota.zip
