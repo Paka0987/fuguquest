@@ -1,34 +1,29 @@
 name: generate quest3 target
-
 on:
   workflow_dispatch:
     inputs:
       ota_url:
         description: 'Direct download URL for the Quest 3 OTA zip'
         required: true
-
 jobs:
   port:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: install tools
         run: |
-          sudo apt-get install -y llvm debugfs python3-pip
+          sudo apt-get install -y llvm e2fsprogs python3-pip
           pip3 install -r requirements.txt
           pip3 install vmlinux-to-elf
-          curl -L https://github.com/vm03/payload_dumper/releases/latest/download/payload-dumper-go_linux_amd64 -o /usr/local/bin/payload-dumper-go
+          curl -L https://github.com/ssut/payload-dumper-go/releases/latest/download/payload-dumper-go_linux_amd64.tar.gz \
+            | tar xz -C /usr/local/bin payload-dumper-go
           chmod +x /usr/local/bin/payload-dumper-go
-
       - name: download OTA
         run: |
           curl -L "${{ github.event.inputs.ota_url }}" -o ota.zip
-
       - name: generate target
         run: |
           python3 port.py --zip ota.zip
-
       - uses: actions/upload-artifact@v4
         with:
           name: quest3-target
