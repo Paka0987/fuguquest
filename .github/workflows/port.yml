@@ -15,9 +15,23 @@ jobs:
           sudo apt-get install -y llvm e2fsprogs python3-pip
           pip3 install -r requirements.txt
           pip3 install vmlinux-to-elf
-          curl -L https://github.com/ssut/payload-dumper-go/releases/latest/download/payload-dumper-go_linux_amd64.tar.gz \
-            | tar xz -C /usr/local/bin payload-dumper-go
+          # resolve the versioned asset URL dynamically
+          PDGO_URL=$(curl -s https://api.github.com/repos/ssut/payload-dumper-go/releases/latest \
+            | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+url = next(
+    a['browser_download_url']
+    for a in data['assets']
+    if 'linux_amd64' in a['name'] and a['name'].endswith('.tar.gz')
+)
+print(url)
+")
+          echo "payload-dumper-go URL: $PDGO_URL"
+          curl -L "$PDGO_URL" | tar xz -C /tmp
+          find /tmp -name 'payload-dumper-go' -exec mv {} /usr/local/bin/ \;
           chmod +x /usr/local/bin/payload-dumper-go
+          payload-dumper-go --version || true
       - name: download OTA
         run: |
           curl -L "${{ github.event.inputs.ota_url }}" -o ota.zip
