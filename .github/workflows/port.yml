@@ -15,7 +15,7 @@ jobs:
           sudo apt-get install -y llvm e2fsprogs python3-pip jq
           pip3 install -r requirements.txt
           pip3 install vmlinux-to-elf
-          PDGO_URL=$(curl -s https://api.github.com/repos/ssut/payload-dumper-go/releases/latest | jq -r '.assets[] | select(.name | test("linux_amd64.*\\.tar\\.gz")) | .browser_download_url')
+          PDGO_URL=$(curl -s https://api.github.com/repos/ssut/payload-dumper-go/releases/latest | jq -r '[.assets[] | select(.name | (test("linux_amd64.*\\.tar\\.gz") and (contains("avx2") | not)))] | first | .browser_download_url')
           echo "Downloading: $PDGO_URL"
           curl -L "$PDGO_URL" | tar xz -C /tmp
           find /tmp -name 'payload-dumper-go' -exec mv {} /usr/local/bin/ \;
